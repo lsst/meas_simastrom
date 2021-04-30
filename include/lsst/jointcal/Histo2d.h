@@ -25,6 +25,8 @@
 #ifndef LSST_JOINTCAL_HISTO2D_H
 #define LSST_JOINTCAL_HISTO2D_H
 
+#include <vector>
+
 namespace lsst {
 namespace jointcal {
 
@@ -54,7 +56,7 @@ private:
     void operator=(const Histo2d &right);
     bool indices(double x, double y, int &ix, int &iy) const;
 
-    std::unique_ptr<float[]> data;
+    std::vector<float> data;
     int nx, ny;
     float minx, miny;
     float scalex, scaley;
