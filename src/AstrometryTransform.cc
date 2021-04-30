@@ -31,7 +31,6 @@
 #include <fstream>
 #include "assert.h"
 #include <sstream>
-
 #include "Eigen/Core"
 
 #include "lsst/log/Log.h"
@@ -42,7 +41,13 @@
 #include "lsst/pex/exceptions.h"
 #include "Eigen/Cholesky"
 
-using long_double=double;
+#if defined(__aarch64__)
+#include <boost/multiprecision/cpp_bin_float.hpp>
+using namespace boost::multiprecision;
+using long_double=cpp_bin_float_double_extended;
+#else
+using long_double=long double;
+#endif
 
 namespace pexExcept = lsst::pex::exceptions;
 
@@ -1068,8 +1073,8 @@ AstrometryTransformPolynomial AstrometryTransformPolynomial::operator*(
     AstrometryTransformPolynomial result(_order * right._order);
     for (std::size_t px = 0; px <= result._order; ++px)
         for (std::size_t py = 0; py <= result._order - px; ++py) {
-            result.getCoefficient(px, py, 0) = rx.getCoefficient(px, py);
-            result.getCoefficient(px, py, 1) = ry.getCoefficient(px, py);
+            result.getCoefficient(px, py, 0) = static_cast<double>(rx.getCoefficient(px, py));
+            result.getCoefficient(px, py, 1) = static_cast<double>(ry.getCoefficient(px, py));
         }
     return result;
 }
