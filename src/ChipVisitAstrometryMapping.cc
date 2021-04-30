@@ -36,7 +36,7 @@ ChipVisitAstrometryMapping::ChipVisitAstrometryMapping(std::shared_ptr<SimpleAst
     /* Allocate the record of temporary variables, so that they are not
        allocated at every call. This is hidden behind a pointer in order
        to be allowed to alter them in a const routine. */
-    tmp = std::unique_ptr<tmpVars>(new tmpVars);
+    //tmp = std::unique_ptr<tmpVars>(new tmpVars);
     setWhatToFit(true, true);
 }
 

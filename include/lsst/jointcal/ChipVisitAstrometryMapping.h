@@ -92,9 +92,9 @@ private:
     {
         Eigen::MatrixX2d h1, h2;
         Eigen::Matrix2d dt2dx;
-    };
+    } _tmpVars;
 
-    std::unique_ptr<tmpVars> tmp;
+    tmpVars *tmp=&_tmpVars;
 };
 }  // namespace jointcal
 }  // namespace lsst
