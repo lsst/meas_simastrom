@@ -62,7 +62,7 @@ public:
     void print() const;
 
 private:
-    std::unique_ptr<int[]> _data;
+    std::vector<int> _data;
     int _ndata;
     int _dataSize;
     int _n[4];

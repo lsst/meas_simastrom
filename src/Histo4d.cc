@@ -40,9 +40,8 @@ namespace jointcal {
 
 SparseHisto4d::SparseHisto4d(const int n1, double min1, double max1, const int n2, double min2, double max2,
                              const int n3, double min3, double max3, const int n4, double min4, double max4,
-                             const int nEntries) {
+                             const int nEntries) : _data(nEntries,0) {
     double indexMax = n1 * n2 * n3 * n4;
-    _data.reset();
     if (indexMax > double(INT_MAX))
         LOGLS_WARN(_log, "Cannot hold a 4D histo with more than " << INT_MAX << " values.");
     _n[0] = n1;
@@ -59,7 +58,6 @@ SparseHisto4d::SparseHisto4d(const int n1, double min1, double max1, const int n
     _maxVal[3] = max4;
 
     for (int i = 0; i < 4; ++i) _scale[i] = _n[i] / (_maxVal[i] - _minVal[i]);
-    _data.reset(new int[nEntries]);
     _dataSize = nEntries;
     _ndata = 0;
     _sorted = false;
@@ -85,7 +83,7 @@ void SparseHisto4d::inverse_code(int code, double x[4]) const {
 
 void SparseHisto4d::sort() {
     if (!_sorted) {
-        std::sort(_data.get(), _data.get() + _ndata);
+        std::sort(_data.begin(), _data.end());
         _sorted = true;
     }
 }
@@ -96,10 +94,8 @@ void SparseHisto4d::fill(const double x[4])
     int code = code_value(x);
     if (code < 0) return;
     if (_ndata == _dataSize) {
-        std::unique_ptr<int[]> newData(new int[_dataSize * 2]);
-        memcpy(newData.get(), _data.get(), _dataSize * sizeof(_data[0]));
-        _data.swap(newData);
         _dataSize *= 2;
+        _data.resize(_dataSize);
     }
     _data[_ndata++] = code;
     _sorted = false;
