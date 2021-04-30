@@ -42,6 +42,8 @@
 #include "lsst/pex/exceptions.h"
 #include "Eigen/Cholesky"
 
+using long_double=double;
+
 namespace pexExcept = lsst::pex::exceptions;
 
 using namespace std;
@@ -962,7 +964,7 @@ std::unique_ptr<AstrometryTransform> AstrometryTransformPolynomial::composeAndRe
 class PolyXY {
     std::size_t order;
     std::size_t nterms;
-    vector<long double> coeffs;
+    vector<long_double> coeffs;
 
 public:
     PolyXY(const int order) : order(order), nterms((order + 1) * (order + 2) / 2) {
@@ -980,12 +982,12 @@ public:
             }
     }
 
-    long double getCoefficient(std::size_t powX, std::size_t powY) const {
+    long_double getCoefficient(std::size_t powX, std::size_t powY) const {
         assert(powX + powY <= order);
         return coeffs.at((powX + powY) * (powX + powY + 1) / 2 + powY);
     }
 
-    long double &getCoefficient(std::size_t powX, std::size_t powY) {
+    long_double &getCoefficient(std::size_t powX, std::size_t powY) {
         assert(powX + powY <= order);
         return coeffs.at((powX + powY) * (powX + powY + 1) / 2 + powY);
     }
@@ -1001,7 +1003,7 @@ static void operator+=(PolyXY &left, const PolyXY &right) {
 }
 
 /* multiplication by a scalar */
-static PolyXY operator*(const long double &a, const PolyXY &polyXY) {
+static PolyXY operator*(const long_double &a, const PolyXY &polyXY) {
     PolyXY result(polyXY);
     // no direct access to coefficients: do it the soft way
     std::size_t order = polyXY.getOrder();
