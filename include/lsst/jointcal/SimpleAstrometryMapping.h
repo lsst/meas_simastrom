@@ -116,7 +116,7 @@ protected:
 //! Mapping implementation for a polynomial transformation.
 class SimplePolyMapping : public SimpleAstrometryMapping {
 public:
-    ~SimplePolyMapping() {}
+    ~SimplePolyMapping() = default;
 
     // ! contructor.
     /*! The transformation will be initialized to transform, so that the effective transformation
