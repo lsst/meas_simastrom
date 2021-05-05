@@ -1,13 +1,13 @@
 """Sphinx configuration file for an LSST stack package.
-
-This configuration only affects single-package Sphinx documenation builds.
+This configuration only affects single-package Sphinx documentation builds.
+For more information, see:
+https://developer.lsst.io/stack/building-single-package-docs.html
 """
 
-from documenteer.sphinxconfig.stackconf import build_package_configs
-import lsst.jointcal
+from documenteer.conf.pipelinespkg import *
 
 
-_g = globals()
-_g.update(build_package_configs(
-    project_name='jointcal',
-    version=lsst.jointcal.version.__version__))
+project = "jointcal"
+html_theme_options["logotext"] = project
+html_title = project
+html_short_title = project
