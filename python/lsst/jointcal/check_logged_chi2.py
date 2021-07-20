@@ -125,6 +125,11 @@ class LogParser:
         ----------
         logfile : `str`
             The filename of the jointcal log to process.
+
+        Returns
+        -------
+        astrometry, photometry : `Chi2Data`
+            The chi2 values that were found in the log.
         """
         title = os.path.basename(logfile)
         if self.verbose:
@@ -146,6 +151,8 @@ class LogParser:
             plotfile = f"{os.path.splitext(title)[0]}.png"
             plt.savefig(plotfile, bbox_inches="tight")
             print("Saved plot:", plotfile)
+
+        return astrometry, photometry
 
     def _find_chi2_increase(self, chi2Data, title, label, threshold=1):
         """Return True and print a message if the raw chi2 increases
