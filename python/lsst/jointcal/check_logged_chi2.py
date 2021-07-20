@@ -85,13 +85,20 @@ class LogParser:
         Make plots for each file (saved to the current working directory)?
     verbose : `bool`
         Print extra updates during processing?
+    longlog : `bool`
+        Use a regex designed for the long
     """
-    def __init__(self, plot=True, verbose=True):
+    def __init__(self, plot=True, verbose=True, longlog=True):
         # This regular expression extracts the chi2 values, and the "kind" of
         # chi2 (e.g. "Initial", "Fit iteration").
-        # Chi2 values in the log look like this, for example:
+        # Chi2 values in the log look like this, for example for the "normal" format:
         # jointcal INFO: Initial chi2/ndof : 2.50373e+16/532674=4.7003e+10
-        chi2_re = "jointcal INFO: (?P<kind>.+) chi2/ndof : (?P<chi2>.+)/(?P<ndof>.+)=(?P<reduced_chi2>.+)"
+        if longlog is False:
+            chi2_re = r"jointcal INFO: (?P<kind>.+) chi2/ndof : (?P<chi2>.+)/(?P<ndof>.+)=(?P<reduced_chi2>.+)"  # noqa: E501
+        else:
+            # and for the "longlog" format:
+            # INFO  2021-07-20T11:08:55.715-0500 jointcal ()(jointcal.py:1391)- Initial chi2/ndof : 4.44678e+16/508342=8.74762e+10  # noqa: E501
+            chi2_re = r"INFO (.*) jointcal \(\)(\(jointcal\.py\:[0-9]*\))- (?P<kind>.+) chi2/ndof : (?P<chi2>.+)/(?P<ndof>.+)=(?P<reduced_chi2>.+)"  # noqa: E501
         self.matcher = re.compile(chi2_re)
         self.plot = plot
         self.verbose = verbose
@@ -101,10 +108,12 @@ class LogParser:
 
         # How to find the beginning and end of the relevant parts of the log
         # to scan for chi2 values.
-        self.section_start = {"astrometry": "Starting astrometric fitting...",
-                              "photometry": "Starting photometric fitting..."}
-        self.section_end = {"astrometry": "Updating WCS for visit:",
-                            "photometry": "Updating PhotoCalib for visit:"}
+        self.section_start = {"astrometry": "=== Starting astrometric fitting...",
+                              "photometry": "=== Starting photometric fitting..."}
+        # Scan for astrometry until the "====== Now processing photometry..." line,
+        # and for photometry until the end of the file.
+        self.section_end = {"astrometry": "====== Now processing photometry...",
+                            "photometry": None}
 
     def __call__(self, logfile):
         """Parse logfile to extract chi2 values and generate and save plots.
@@ -155,9 +164,11 @@ class LogParser:
             return True
         return False
 
-    def _extract_chi2(self, opened_log, section):
+    def _extract_chi2(self, opened_log, section, verbose=True):
         """Return the values extracted from the chi2 statements in the logfile.
         """
+        if verbose:
+            print(f"Scanning {section}")
         start = self.section_start[section]
         end = self.section_end[section]
         kind = []
@@ -170,8 +181,8 @@ class LogParser:
                 break
 
         for line in opened_log:
-            # Stop parsing at the section end line.
-            if end in line:
+            # Stop parsing at the section end line, or end of file if end is None.
+            if end is not None and end in line:
                 break
             if "chi2" in line:
                 match = self.matcher.search(line)
@@ -180,6 +191,7 @@ class LogParser:
                     chi2.append(match.group("chi2"))
                     ndof.append(match.group("ndof"))
                     reduced.append(match.group("reduced_chi2"))
+                    print(f"Found: {kind[-1]}: {chi2[-1]}/{ndof[-1]} = {reduced[-1]}")
 
         # No chi2 values were found (e.g., photometry wasn't run).
         if len(kind) == 0:
